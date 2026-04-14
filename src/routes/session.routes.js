@@ -5,20 +5,28 @@ const router = express.Router();
 
 router.get('/session', async (req, res) => {
   try {
-    const { code, session } = await createSession();
+    const result = await createSession();
 
-    if (code === 200 && session) {
-      // Devuelve SOLO la sesión
-      console.log(res)
-      return res.status(200).send(session);
-
+    if (!result || !result.session) {
+      return res.status(502).json({
+        code: 502,
+        error: 'Invalid response from auth service'
+      });
     }
 
-    return res.status(500).send('Error creating session');
+    // ✅ RESPUESTA EXACTA QUE NECESITAS
+    return res.status(200).json({
+      code: 200,
+      session: result.session
+    });
 
   } catch (error) {
-    console.error('Session error:', error.response?.data || error.message);
-    return res.status(500).send('Internal server error');
+    console.error(error.response?.data || error.message);
+
+    return res.status(500).json({
+      code: 500,
+      error: 'Internal server error'
+    });
   }
 });
 
